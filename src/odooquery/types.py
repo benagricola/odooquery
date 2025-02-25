@@ -84,20 +84,32 @@ class Product(TypedDict):
     category_id: int
     category_name: str
 
-class StructuredResponse(BaseModel):
-    summary: List[str]
-    response: str
-    intents: List[str]
-    issues: List[str]
-    knowledge: List[str]
-    assumptions: List[str]
-    products: List[Product]
-    stock: List[ProductStock]
-    '''orders: List[Order]
-    tickets: List[Ticket]
-    partners: List[Partner]
-    products: List[Product]
-    stock: List[ProductStock]
-    variants: List[ProductVariant]
-    knowledge: List[str]
-    assumptions: List[str]'''
+class MailingStatistic(TypedDict):
+    id: int
+    mass_mailing_id: int
+    model: str
+    res_id: int
+    email: str
+    sent: str  # datetime
+    opened: Optional[str]  # datetime
+    clicked: Optional[str]  # datetime
+    bounced: Optional[str]  # datetime
+    exception: Optional[str]
+
+class MailingContact(TypedDict):
+    id: int
+    name: str
+    email: str
+    list_ids: List[int]
+    unsubscribed: bool
+    opt_out: bool
+
+class MassMailing(TypedDict):
+    id: int
+    name: str
+    subject: str
+    sent_date: str  # datetime
+    state: str
+    mailing_model: str
+    statistics_ids: List[int]
+    contact_list_ids: List[int]
