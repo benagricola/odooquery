@@ -123,7 +123,7 @@ class OdooQuery:
         """Synchronous wrapper for execute_functions."""
         return asyncio.run(self.execute_functions(function_calls))
 
-    def close(self):
+    def disconnect(self):
         """Safely disconnect from Odoo server."""
         if self.connection:
             try:
