@@ -1,6 +1,5 @@
 from typing import List
 from .types import Product, ProductVariant, ProductStock
-from pprint import pprint
 
 def search_product_ids_by_code(self, codes: List[str]) -> List[int]:
     """Search for sellable product IDs by their reference codes."""
