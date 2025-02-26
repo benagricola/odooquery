@@ -56,7 +56,7 @@ def fetch_orders_by_id(self, order_ids: List[int]) -> List[Order]:
         "invoice_status": order['invoice_status'],
         "amount_total": order['amount_total'],
         "transfers": fetch_transfers_by_id(self, order['picking_ids']),
-        "messages": messages.fetch_messages_by_ids(self, order['message_ids'])
+        "messages": messages.fetch_messages_by_id(self, order['message_ids'])
     } for order in self.connection.env['sale.order'].read(order_ids, ['name', 'order_line', 'state', 'date_order', 'partner_id', 'invoice_status', 'amount_total', 'message_ids', 'picking_ids'])]
 
 
@@ -75,7 +75,7 @@ def fetch_transfers_by_id(self, transfer_ids: List[int]) -> List[Transfer]:
         "location_dest_id": transfer["location_dest_id"][0] if isinstance(transfer["location_dest_id"], (list, tuple)) else transfer["location_dest_id"],
         "location_dest_name": transfer["location_dest_id"][1] if isinstance(transfer["location_dest_id"], (list, tuple)) else '',
         "items": fetch_transfer_lines_by_id(self, transfer["move_line_ids_without_package"]),
-        "messages": messages.fetch_messages_by_ids(self, transfer['message_ids'])
+        "messages": messages.fetch_messages_by_id(self, transfer['message_ids'])
     } for transfer in self.connection.env['stock.picking'].read(transfer_ids, ['name', 'state', 'date_done', 'location_id', 'location_dest_id', 'move_line_ids_without_package', 'message_ids'])]
 
 def fetch_transfer_lines_by_id(self, transfer_line_ids: List[int]) -> List[TransferLine]:
