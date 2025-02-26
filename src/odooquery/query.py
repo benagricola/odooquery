@@ -138,16 +138,46 @@ class OdooQuery:
         """Return list of callable functions."""
         return list(self._functions.values())
 
-    def add_functions(self, *modules):
-        """Add functions from modules."""
-        for module in modules:
-            for name, func in module.__dict__.items():
-                if inspect.isfunction(func) and not name.startswith('_'):
-                    annotations = getattr(func, '__annotations__', {})
-                    if not annotations:
-                        continue
+    def add_function(self, func: Callable) -> None:
+        """Add a single function to the OdooQuery instance.
 
-                    # Create function and bind it to the instance
-                    bound_func = create_odoo_function(func, self)
-                    setattr(self, name, bound_func)
-                    self._functions[name] = bound_func
+        Args:
+            func: The function to add. Must have type annotations.
+        """
+        if not inspect.isfunction(func):
+            raise ValueError(f"Expected a function, got {type(func)}")
+
+        name = func.__name__
+        if name.startswith('_'):
+            return
+
+        annotations = getattr(func, '__annotations__', {})
+        if not annotations:
+            return
+
+        # Create function and bind it to the instance
+        bound_func = create_odoo_function(func, self)
+        setattr(self, name, bound_func)
+        self._functions[name] = bound_func
+
+    def add_functions(self, *items):
+        """Add functions from modules, lists, tuples, or individual functions.
+
+        Args:
+            *items: Can be modules, lists/tuples of functions, or individual functions
+        """
+        for item in items:
+            if inspect.ismodule(item):
+                # If it's a module, add all its functions
+                for name, func in item.__dict__.items():
+                    if inspect.isfunction(func):
+                        self.add_function(func)
+            elif isinstance(item, (list, tuple)):
+                # If it's a list or tuple, add each function
+                for func in item:
+                    self.add_function(func)
+            elif inspect.isfunction(item):
+                # If it's a single function
+                self.add_function(item)
+            else:
+                raise ValueError(f"Unsupported item type: {type(item)}")
