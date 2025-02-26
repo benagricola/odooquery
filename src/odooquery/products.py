@@ -45,32 +45,32 @@ def search_variant_ids_by_product_id(self, product_ids: List[int]) -> List[int]:
         ('product_tmpl_id', 'in', product_ids)
     ])
 
-def fetch_stock_levels_by_variant_id(self, variant_ids: List[int]) -> List[ProductStock]:
-    """Fetch stock levels for variants in internal locations only, grouped by product variant and location ids."""
-    # First get internal location IDs
-    internal_locations = search_location_ids_by_usage(self, 'internal')
-
-    # Get stock quants for these locations
-    stock_quants = self.connection.env['stock.quant'].read_group(
-        [
-            ('product_id', 'in', variant_ids),
-            ('location_id', 'in', internal_locations)
-        ],
-        ['product_id', 'location_id', 'quantity', 'reserved_quantity'],
-        ['product_id', 'location_id'],
-        lazy=False
-    )
-
+def fetch_stock_quants_by_variant_id_and_location_id(self, variant_ids: List[int], location_ids: List[int]) -> List[ProductStock]:
+    """Fetch stock quants for variants in specific locations, grouped by product variant and location ids."""
     return [{
-        # Extract location id if this is subscriptable, otherwise use the value as is
         'product_id': quant['product_id'][0] if isinstance(quant['product_id'], (list, tuple)) else quant['product_id'],
         'location_id': quant['location_id'][0] if isinstance(quant['location_id'], (list, tuple)) else quant['location_id'],
         'location_name': quant['location_id'][1] if isinstance(quant['location_id'], (list, tuple)) else '',
         'quantity': quant['quantity'],
         'reserved_quantity': quant['reserved_quantity'],
         'available_quantity': quant['quantity'] - quant['reserved_quantity']
-    } for quant in stock_quants if quant['quantity'] > 0]
+    } for quant in self.connection.env['stock.quant'].read_group(
+        [
+            ('product_id', 'in', variant_ids),
+            ('location_id', 'in', location_ids)
+        ],
+        ['product_id', 'location_id', 'quantity', 'reserved_quantity'],
+        ['product_id', 'location_id'],
+        lazy=False
+    )]
 
+def fetch_stock_levels_by_variant_id(self, variant_ids: List[int]) -> List[ProductStock]:
+    """Fetch stock levels for variants in internal locations only, grouped by product variant and location ids."""
+
+    return self.fetch_stock_quants_by_variant_id_and_location_id(
+        variant_ids,
+        search_location_ids_by_usage(self, 'internal')
+    )
 
 def fetch_variants_by_id(self, variant_ids: List[int]) -> List[ProductVariant]:
     """Fetch detailed variant information including stock levels."""

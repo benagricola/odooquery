@@ -48,7 +48,7 @@ def fetch_order_lines_by_id(self, order_line_ids: List[int]) -> List[int]:
 def fetch_orders_by_id(self, order_ids: List[int]) -> List[Order]:
     return [{
         "name": order['name'],
-        "order_lines": fetch_order_lines_by_id(self, search_order_line_ids_by_order_id(self, order['id'])),
+        "order_lines": fetch_order_lines_by_id(self, search_order_line_ids_by_order_id(self, [order['id']])),
         "state": order['state'],
         "date_order": order['date_order'],
         "partner_id": order['partner_id'][0] if isinstance(order['partner_id'], (list, tuple)) else order['partner_id'],
