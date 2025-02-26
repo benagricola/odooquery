@@ -2,20 +2,20 @@ from typing import List
 from .types import Product, ProductVariant, ProductStock
 from pprint import pprint
 
-def search_product_ids_by_code(self, code: str) -> List[int]:
-    """Search for sellable product IDs by their reference code."""
+def search_product_ids_by_code(self, codes: List[str]) -> List[int]:
+    """Search for sellable product IDs by their reference codes."""
     return self.connection.env['product.template'].search([
         ('sale_ok', '=', True),
         '|',
-        ('default_code', '=', code),
-        ('product_variant_ids.default_code', '=', code)
+        ('default_code', 'in', codes),
+        ('product_variant_ids.default_code', 'in', codes)
     ])
 
-def search_product_ids_by_name(self, name: str) -> List[int]:
-    """Search for sellable product IDs by name."""
+def search_product_ids_by_name(self, names: List[str]) -> List[int]:
+    """Search for sellable product IDs by names."""
     return self.connection.env['product.template'].search([
         ('sale_ok', '=', True),
-        ('name', 'ilike', name)
+        ('name', 'ilike', names)
     ])
 
 def search_location_ids_by_usage(self, usage: str) -> List[int]:
@@ -24,28 +24,28 @@ def search_location_ids_by_usage(self, usage: str) -> List[int]:
         ('usage', '=', usage)
     ])
 
-def search_variant_ids_by_code(self, code: str) -> List[int]:
-    """Search for variant IDs of sellable products by their reference code."""
+def search_variant_ids_by_code(self, codes: List[str]) -> List[int]:
+    """Search for variant IDs of sellable products by their reference codes."""
     return self.connection.env['product.product'].search([
         ('product_tmpl_id.sale_ok', '=', True),
-        ('default_code', '=', code)
+        ('default_code', 'in', codes)
     ])
 
-def search_variant_ids_by_product_name(self, name: str) -> List[int]:
-    """Search for variant IDs of sellable products by product name."""
+def search_variant_ids_by_product_name(self, names: List[str]) -> List[int]:
+    """Search for variant IDs of sellable products by product names."""
     return self.connection.env['product.product'].search([
         ('product_tmpl_id.sale_ok', '=', True),
-        ('product_tmpl_id.name', 'ilike', name)
+        ('product_tmpl_id.name', 'ilike', names)
     ])
 
-def search_variant_ids_by_product_id(self, product_id: int) -> List[int]:
-    """Search for variant IDs of sellable products by product ID."""
+def search_variant_ids_by_product_id(self, product_ids: List[int]) -> List[int]:
+    """Search for variant IDs of sellable products by product IDs."""
     return self.connection.env['product.product'].search([
         ('product_tmpl_id.sale_ok', '=', True),
-        ('product_tmpl_id', '=', product_id)
+        ('product_tmpl_id', 'in', product_ids)
     ])
 
-def fetch_stock_levels_by_variant_ids(self, variant_ids: List[int]) -> List[ProductStock]:
+def fetch_stock_levels_by_variant_id(self, variant_ids: List[int]) -> List[ProductStock]:
     """Fetch stock levels for variants in internal locations only, grouped by product variant and location ids."""
     # First get internal location IDs
     internal_locations = search_location_ids_by_usage(self, 'internal')
@@ -71,7 +71,8 @@ def fetch_stock_levels_by_variant_ids(self, variant_ids: List[int]) -> List[Prod
         'available_quantity': quant['quantity'] - quant['reserved_quantity']
     } for quant in stock_quants if quant['quantity'] > 0]
 
-def fetch_variants_by_ids(self, variant_ids: List[int]) -> List[ProductVariant]:
+
+def fetch_variants_by_id(self, variant_ids: List[int]) -> List[ProductVariant]:
     """Fetch detailed variant information including stock levels."""
     variants = []
     for variant in self.connection.env['product.product'].read(variant_ids,
@@ -87,7 +88,7 @@ def fetch_variants_by_ids(self, variant_ids: List[int]) -> List[ProductVariant]:
         })
     return variants
 
-def fetch_products_by_ids(self, product_ids: List[int]) -> List[Product]:
+def fetch_products_by_id(self, product_ids: List[int]) -> List[Product]:
     """Fetch detailed product information including variants and stock levels."""
     products = self.connection.env['product.template'].read(product_ids, ['id', 'name', 'default_code', 'description', 'categ_id', 'product_variant_ids'])
 
@@ -100,3 +101,37 @@ def fetch_products_by_ids(self, product_ids: List[int]) -> List[Product]:
         'category_name': product['categ_id'][1] if isinstance(product['categ_id'], (list, tuple)) else '',
         'variant_ids': product['product_variant_ids'],
     } for product in products]
+
+# Aggregate functions provide higher level functionality by combining multiple lower level functions
+def fetch_stock_levels_by_product_id(self, product_ids: List[int]) -> List[ProductStock]:
+    """Fetch stock levels for products in internal locations only, grouped by product variant and location ids."""
+    return self.fetch_stock_levels_by_variant_id(self.search_variant_ids_by_product_id(product_ids))
+
+def fetch_stock_levels_by_product_name(self, names: List[str]) -> List[ProductStock]:
+    """Fetch stock levels for products in internal locations only, grouped by product variant and location ids."""
+    return self.fetch_stock_levels_by_variant_id(self.search_variant_ids_by_product_name(names))
+
+def fetch_stock_levels_by_variant_code(self, codes: List[str]) -> List[ProductStock]:
+    """Fetch stock levels for variants in internal locations only, grouped by product variant and location ids."""
+    return self.fetch_stock_levels_by_variant_id(self.search_variant_ids_by_code(codes))
+
+def fetch_variants_by_product_id(self, product_ids: List[int]) -> List[ProductVariant]:
+    """Fetch detailed variant information for products."""
+    return self.fetch_variants_by_id(self.search_variant_ids_by_product_id(product_ids))
+
+def fetch_variants_by_product_name(self, names: List[str]) -> List[ProductVariant]:
+    """Fetch detailed variant information for products."""
+    return self.fetch_variants_by_id(self.search_variant_ids_by_product_name(names))
+
+def fetch_variants_by_product_code(self, codes: List[str]) -> List[ProductVariant]:
+    """Fetch detailed variant information for products."""
+    return self.fetch_variants_by_id(self.search_variant_ids_by_code(codes))
+
+def fetch_products_by_code(self, codes: List[str]) -> List[Product]:
+    """Fetch detailed product information including variants and stock levels."""
+    return self.fetch_products_by_id(self.search_product_ids_by_code(codes))
+
+def fetch_products_by_name(self, names: List[str]) -> List[Product]:
+    """Fetch detailed product information including variants and stock levels."""
+    return self.fetch_products_by_id(self.search_product_ids_by_name(names))
+
