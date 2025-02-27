@@ -69,7 +69,6 @@ def fetch_mass_mailing_statistics_by_id(self, stat_ids: List[int]) -> List[Maili
         'sent_datetime': stat['sent_datetime'],
         'open_datetime': stat['open_datetime'],
         'reply_datetime': stat['reply_datetime'],
-        'exception': stat['exception']
     } for stat in self.connection.env['mailing.trace'].read(
         stat_ids,
         ['mass_mailing_id', 'model', 'res_id', 'email', 'trace_status', 'sent_datetime', 'open_datetime', 'reply_datetime', 'failure_type']
