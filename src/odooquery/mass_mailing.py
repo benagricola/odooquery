@@ -4,7 +4,7 @@ from .types import MailingStatistic, MailingContact, MassMailing
 
 def search_mailing_ids_by_subject(self, subjects: List[str]) -> List[int]:
     """Search for mass mailings by subjects."""
-    return self.connection.env['mail.mass_mailing'].search([
+    return self.connection.env['mailing.mailing'].search([
         ('subject', 'ilike', subjects)
     ])
 
@@ -13,7 +13,7 @@ def search_mailing_ids_by_date_range(self, start_timestamp: int, end_timestamp: 
     start_date = datetime.fromtimestamp(start_timestamp)
     end_date = datetime.fromtimestamp(end_timestamp)
 
-    return self.connection.env['mail.mass_mailing'].search([
+    return self.connection.env['mailing.mailing'].search([
         ('sent_date', '>=', start_date.strftime('%Y-%m-%d %H:%M:%S')),
         ('sent_date', '<=', end_date.strftime('%Y-%m-%d %H:%M:%S'))
     ])
@@ -27,9 +27,8 @@ def fetch_mailings_by_id(self, mailing_ids: List[int]) -> List[MassMailing]:
         'sent_date': mailing['sent_date'],
         'state': mailing['state'],
         'mailing_model': mailing['mailing_model'],
-        'statistics_ids': mailing['statistics_ids'],
         'contact_list_ids': mailing['contact_list_ids']
-    } for mailing in self.connection.env['mail.mass_mailing'].read(
+    } for mailing in self.connection.env['mailing.mailing'].read(
         mailing_ids,
         ['name', 'subject', 'sent_date', 'state', 'mailing_model', 'statistics_ids', 'contact_list_ids']
     )]
@@ -76,13 +75,13 @@ def fetch_mass_mailing_statistics_by_id(self, stat_ids: List[int]) -> List[Maili
 
 def search_contact_ids_by_email(self, emails: List[str]) -> List[int]:
     """Search for mailing list contacts by emails."""
-    return self.connection.env['mail.mass_mailing.contact'].search([
+    return self.connection.env['mailing.contact'].search([
         ('email', 'in', emails)
     ])
 
 def search_contact_ids_by_mailing_id(self, mailing_ids: List[int]) -> List[int]:
     """Search for mailing list contacts for specific mass mailings."""
-    return self.connection.env['mail.mass_mailing.contact'].search([
+    return self.connection.env['mailing.contact'].search([
         ('mass_mailing_id', 'in', mailing_ids)
     ])
 
@@ -90,14 +89,15 @@ def fetch_contacts_by_id(self, contact_ids: List[int]) -> List[MailingContact]:
     """Fetch mailing list contact details."""
     return [{
         'id': contact['id'],
-        'name': contact['name'],
+        'first_name': contact['first_name'],
+        'last_name': contact['last_name'],
+        'company_name': contact['company_name'],
         'email': contact['email'],
         'list_ids': contact['list_ids'],
-        'unsubscribed': contact['unsubscribed'],
-        'opt_out': contact['opt_out']
-    } for contact in self.connection.env['mail.mass_mailing.contact'].read(
+        'subscription_ids': contact['subscription_ids'],
+    } for contact in self.connection.env['mailing.contact'].read(
         contact_ids,
-        ['name', 'email', 'list_ids', 'unsubscribed', 'opt_out']
+        ['first_name', 'last_name', 'company_name', 'email', 'list_ids', 'subscription_ids']
     )]
 
 
