@@ -26,11 +26,18 @@ def fetch_mailings_by_id(self, mailing_ids: List[int]) -> List[MassMailing]:
         'subject': mailing['subject'],
         'sent_date': mailing['sent_date'],
         'state': mailing['state'],
-        'mailing_model': mailing['mailing_model'],
-        'contact_list_ids': mailing['contact_list_ids']
+        'mailing_type': mailing['mailing_type'],
+        'contact_list_ids': mailing['contact_list_ids'],
+        'total': mailing['total'],
+        'sent': mailing['sent'],
+        'opened': mailing['opened'],
+        'clicked': mailing['clicked'],
+        'replied': mailing['replied'],
+        'bounced': mailing['bounced'],
+        'failed': mailing['failed'],
     } for mailing in self.connection.env['mailing.mailing'].read(
         mailing_ids,
-        ['name', 'subject', 'sent_date', 'state', 'mailing_model', 'statistics_ids', 'contact_list_ids']
+        ['name', 'subject', 'sent_date', 'state', 'mailing_type', 'contact_list_ids', 'total', 'sent', 'opened', 'clicked', 'replied', 'bounced', 'failed']
     )]
 
 def search_mass_mailing_statistics_ids_by_mailing_id(self, mailing_ids: List[int]) -> List[MailingStatistic]:

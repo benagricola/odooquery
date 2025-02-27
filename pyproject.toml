@@ -1,6 +1,6 @@
 [project]
 name = "odooquery"
-version = "0.1.0-16"
+version = "0.1.0-17"
 description = "A library to add specific query functionality on top of odoorpc for higher-level functions"
 readme = "README.md"
 requires-python = ">=3.12"
