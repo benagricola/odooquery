@@ -64,14 +64,14 @@ def fetch_mass_mailing_statistics_by_id(self, stat_ids: List[int]) -> List[Maili
         'model': stat['model'],
         'res_id': stat['res_id'],
         'email': stat['email'],
-        'sent': stat['sent'],
-        'opened': stat['opened'],
-        'clicked': stat['clicked'],
-        'bounced': stat['bounced'],
+        'sent_datetime': stat['sent_datetime'],
+        'open_datetime': stat['open_datetime'],
+        'click_datetime': stat['click_datetime'],
+        'bounce_datetime': stat['bounce_datetime'],
         'exception': stat['exception']
     } for stat in self.connection.env['mailing.trace'].read(
         stat_ids,
-        ['mass_mailing_id', 'model', 'res_id', 'email', 'sent', 'opened', 'clicked', 'bounced', 'exception']
+        ['mass_mailing_id', 'model', 'res_id', 'email', 'sent_datetime', 'open_datetime', 'click_datetime', 'bounce_datetime', 'exception']
     )]
 
 def search_contact_ids_by_email(self, emails: List[str]) -> List[int]:
