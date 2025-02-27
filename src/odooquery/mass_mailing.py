@@ -1,25 +1,16 @@
 from typing import List
 from datetime import datetime
 from .types import MailingStatistic, MailingContact, MassMailing
+from .utils.query import auto_paginated_search_read
 
-def search_mailing_ids_by_subject(self, subjects: List[str]) -> List[int]:
-    """Search for mass mailings by subjects."""
-    return self.connection.env['mailing.mailing'].search([
-        ('subject', 'ilike', subjects)
-    ])
+def fetch_mailings(self, domain: List, order: str = None) -> List[MassMailing]:
+    """Base function to fetch mass mailings matching given criteria."""
+    fields = ['name', 'subject', 'sent_date', 'state', 'mailing_type',
+              'contact_list_ids', 'total', 'sent', 'opened', 'clicked',
+              'replied', 'bounced', 'failed']
 
-def search_mailing_ids_by_date_range(self, start_timestamp: int, end_timestamp: int) -> List[int]:
-    """Search for mass mailings within a date range using Unix timestamps."""
-    start_date = datetime.fromtimestamp(start_timestamp)
-    end_date = datetime.fromtimestamp(end_timestamp)
+    records = auto_paginated_search_read(self, 'mailing.mailing', domain, fields, order)
 
-    return self.connection.env['mailing.mailing'].search([
-        ('sent_date', '>=', start_date.strftime('%Y-%m-%d %H:%M:%S')),
-        ('sent_date', '<=', end_date.strftime('%Y-%m-%d %H:%M:%S'))
-    ])
-
-def fetch_mailings_by_id(self, mailing_ids: List[int]) -> List[MassMailing]:
-    """Fetch mass mailing details by IDs."""
     return [{
         'id': mailing['id'],
         'name': mailing['name'],
@@ -35,35 +26,30 @@ def fetch_mailings_by_id(self, mailing_ids: List[int]) -> List[MassMailing]:
         'replied': mailing['replied'],
         'bounced': mailing['bounced'],
         'failed': mailing['failed'],
-    } for mailing in self.connection.env['mailing.mailing'].read(
-        mailing_ids,
-        ['name', 'subject', 'sent_date', 'state', 'mailing_type', 'contact_list_ids', 'total', 'sent', 'opened', 'clicked', 'replied', 'bounced', 'failed']
-    )]
+    } for mailing in records]
 
-def search_mass_mailing_statistics_ids_by_mailing_id(self, mailing_ids: List[int]) -> List[MailingStatistic]:
-    """Search statistics for specific mass mailings."""
-    return self.connection.env['mailing.trace'].search([
-        ('mass_mailing_id', 'in', mailing_ids)
-    ])
+def fetch_mailings_by_subject(self, subjects: List[str], order: str = None) -> List[MassMailing]:
+    """Fetch mass mailings by subjects."""
+    return self.fetch_mailings([('subject', 'ilike', subjects)], order)
 
-def search_mass_mailing_statistics_ids_by_email(self, emails: List[str]) -> List[MailingStatistic]:
-    """Search mass mailing statistics for specific emails."""
-    return self.connection.env['mailing.trace'].search([
-        ('email', 'in', emails)
-    ])
+def fetch_mailings_by_date_range(self, start_timestamp: int, end_timestamp: int,
+                               order: str = None) -> List[MassMailing]:
+    """Fetch mass mailings within a date range using Unix timestamps."""
+    start_date = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    end_date = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
-def search_mass_mailing_statistics_ids_by_date_range(self, start_timestamp: int, end_timestamp: int) -> List[MailingStatistic]:
-    """Search mass mailing statistics within a date range using Unix timestamps."""
-    start_date = datetime.fromtimestamp(start_timestamp)
-    end_date = datetime.fromtimestamp(end_timestamp)
+    return self.fetch_mailings([
+        ('sent_date', '>=', start_date),
+        ('sent_date', '<=', end_date)
+    ], order)
 
-    return self.connection.env['mailing.trace'].search([
-        ('sent', '>=', start_date.strftime('%Y-%m-%d %H:%M:%S')),
-        ('sent', '<=', end_date.strftime('%Y-%m-%d %H:%M:%S'))
-    ])
+def fetch_mailing_statistics(self, domain: List, order: str = None) -> List[MailingStatistic]:
+    """Base function to fetch mailing statistics matching given criteria."""
+    fields = ['mass_mailing_id', 'model', 'res_id', 'email', 'trace_status',
+              'sent_datetime', 'open_datetime', 'reply_datetime', 'failure_type']
 
-def fetch_mass_mailing_statistics_by_id(self, stat_ids: List[int]) -> List[MailingStatistic]:
-    """Fetch mass mailing statistics by IDs."""
+    records = auto_paginated_search_read(self, 'mailing.trace', domain, fields, order)
+
     return [{
         'id': stat['id'],
         'mass_mailing_id': stat['mass_mailing_id'][0] if isinstance(stat['mass_mailing_id'], (list, tuple)) else stat['mass_mailing_id'],
@@ -75,68 +61,38 @@ def fetch_mass_mailing_statistics_by_id(self, stat_ids: List[int]) -> List[Maili
         'sent_datetime': stat['sent_datetime'],
         'open_datetime': stat['open_datetime'],
         'reply_datetime': stat['reply_datetime'],
-    } for stat in self.connection.env['mailing.trace'].read(
-        stat_ids,
-        ['mass_mailing_id', 'model', 'res_id', 'email', 'trace_status', 'sent_datetime', 'open_datetime', 'reply_datetime', 'failure_type']
-    )]
+    } for stat in records]
 
-def search_contact_ids_by_email(self, emails: List[str]) -> List[int]:
-    """Search for mailing list contacts by emails."""
-    return self.connection.env['mailing.contact'].search([
-        ('email', 'in', emails)
-    ])
+def fetch_mailing_statistics_by_email(self, emails: List[str], order: str = None) -> List[MailingStatistic]:
+    """Fetch mass mailing statistics for specific emails."""
+    return self.fetch_mailing_statistics([('email', 'in', emails)], order)
 
-def search_contact_ids_by_mailing_id(self, mailing_ids: List[int]) -> List[int]:
-    """Search for mailing list contacts for specific mass mailings."""
-    return self.connection.env['mailing.contact'].search([
-        ('mass_mailing_id', 'in', mailing_ids)
-    ])
+def fetch_mailing_statistics_by_date_range(self, start_timestamp: int, end_timestamp: int,
+                                         order: str = None) -> List[MailingStatistic]:
+    """Fetch mass mailing statistics within a date range using Unix timestamps."""
+    start_date = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    end_date = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
-def fetch_contacts_by_id(self, contact_ids: List[int]) -> List[MailingContact]:
-    """Fetch mailing list contact details."""
+    return self.fetch_mailing_statistics([
+        ('sent_datetime', '>=', start_date),
+        ('sent_datetime', '<=', end_date)
+    ], order)
+
+def fetch_contacts(self, domain: List, order: str = None) -> List[MailingContact]:
+    """Fetch mailing list contacts matching the given domain."""
+    fields = ['name', 'company_name', 'email', 'list_ids', 'subscription_ids']
+
+    records = auto_paginated_search_read(self, 'mailing.contact', domain, fields, order)
+
     return [{
         'id': contact['id'],
-        'first_name': contact['first_name'],
-        'last_name': contact['last_name'],
+        'name': contact['name'],
         'company_name': contact['company_name'],
         'email': contact['email'],
         'list_ids': contact['list_ids'],
         'subscription_ids': contact['subscription_ids'],
-    } for contact in self.connection.env['mailing.contact'].read(
-        contact_ids,
-        ['first_name', 'last_name', 'company_name', 'email', 'list_ids', 'subscription_ids']
-    )]
+    } for contact in records]
 
-
-# Aggregate functions provide higher level functionality by combining multiple lower level functions
-def fetch_mailings_by_subject(self, subjects: List[str]) -> List[MassMailing]:
-    """Fetch mass mailings by subjects."""
-    return fetch_mailings_by_id(self, search_mailing_ids_by_subject(self, subjects))
-
-def fetch_mailings_by_date_range(self, start_timestamp: int, end_timestamp: int) -> List[MassMailing]:
-    """Fetch mass mailings within a date range using Unix timestamps."""
-    return fetch_mailings_by_id(self,
-        search_mailing_ids_by_date_range(self, start_timestamp, end_timestamp)
-    )
-
-def fetch_mass_mailing_statistics_by_mailing_id(self, mailing_ids: List[int]) -> List[MailingStatistic]:
-    """Fetch mass mailing statistics for specific mass mailings."""
-    return fetch_mass_mailing_statistics_by_id(self, search_mass_mailing_statistics_ids_by_mailing_id(self, mailing_ids))
-
-def fetch_mass_mailing_statistics_by_email(self, emails: List[str]) -> List[MailingStatistic]:
-    """Fetch mass mailing statistics for specific emails."""
-    return fetch_mass_mailing_statistics_by_id(self, search_mass_mailing_statistics_ids_by_email(self, emails))
-
-def fetch_mass_mailing_statistics_by_date_range(self, start_timestamp: int, end_timestamp: int) -> List[MailingStatistic]:
-    """Fetch mass mailing statistics within a date range using Unix timestamps."""
-    return fetch_mass_mailing_statistics_by_id(self,
-        search_mass_mailing_statistics_ids_by_date_range(self, start_timestamp, end_timestamp)
-    )
-
-def fetch_contacts_by_email(self, emails: List[str]) -> List[MailingContact]:
+def fetch_contacts_by_email(self, emails: List[str], order: str = None) -> List[MailingContact]:
     """Fetch mailing list contacts by emails."""
-    return fetch_contacts_by_id(self, search_contact_ids_by_email(self, emails))
-
-def fetch_contacts_by_mailing_id(self, mailing_ids: List[int]) -> List[MailingContact]:
-    """Fetch mailing list contacts for specific mass mailings."""
-    return fetch_contacts_by_id(self, search_contact_ids_by_mailing_id(self, mailing_ids))
+    return self.fetch_contacts([('email', 'in', emails)], order)
