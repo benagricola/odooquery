@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-def strip_html(text: str) -> str:
+def _strip_html(text: str) -> str:
     """Remove HTML tags from text while preserving structure."""
     if not text:
         return ""

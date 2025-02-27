@@ -1,6 +1,6 @@
 from typing import List
 from .types import Message
-from .utils.text_processing import strip_html as _strip_html
+from .utils.text_processing import _strip_html
 
 def fetch_messages_by_id(self, message_ids: List[int]) -> List[Message]:
     messages = self.connection.env['mail.message'].read(message_ids, ['id', 'attachment_ids','author_id','body','date','subtype_id','is_internal','description','message_type','needaction'])

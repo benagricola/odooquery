@@ -1,7 +1,7 @@
 from . import messages
 from typing import List, Dict, Any
 from .types import Ticket
-from .utils.text_processing import strip_html as _strip_html
+from .utils.text_processing import _strip_html
 from datetime import datetime
 
 def search_ticket_ids_by_author_email(self, emails: List[str]) -> List[int]:
