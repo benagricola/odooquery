@@ -1,12 +1,12 @@
 from typing import List
 from .types import Partner
 
-def fetch_partners(self, domain: List, order: str) -> List[Partner]:
+def fetch_partners(self, domain: List) -> List[Partner]:
     """Base function to fetch partners matching given criteria."""
     fields = ['name', 'email', 'phone', 'mobile', 'street', 'street2', 'city',
               'state_id', 'country_id', 'zip', 'customer_rank', 'supplier_rank']
 
-    records = self.auto_paginated_search_read('res.partner', domain, fields, order)
+    records = self.auto_paginated_search_read('res.partner', domain, fields)
 
     return [{
         'id': partner['id'],
@@ -24,26 +24,26 @@ def fetch_partners(self, domain: List, order: str) -> List[Partner]:
         'supplier_rank': partner['supplier_rank']
     } for partner in records]
 
-def fetch_partners_by_email(self, emails: List[str], order: str) -> List[Partner]:
+def fetch_partners_by_email(self, emails: List[str]) -> List[Partner]:
     """Fetch partners by email addresses."""
     return self.fetch_partners([
         ('email', 'in', emails)
-    ], order)
+    ])
 
-def fetch_partners_by_name(self, names: List[str], order: str) -> List[Partner]:
+def fetch_partners_by_name(self, names: List[str]) -> List[Partner]:
     """Fetch partners by names."""
     return self.fetch_partners([
         ('name', 'in', names)
-    ], order)
+    ])
 
-def fetch_customers_above_rank(self, min_rank: int, order: str) -> List[Partner]:
+def fetch_customers_above_rank(self, min_rank: int) -> List[Partner]:
     """Fetch partners that are customers with minimum rank."""
     return self.fetch_partners([
         ('customer_rank', '>=', min_rank)
-    ], order)
+    ])
 
-def fetch_suppliers_above_rank(self, min_rank: int, order: str) -> List[Partner]:
+def fetch_suppliers_above_rank(self, min_rank: int) -> List[Partner]:
     """Fetch partners that are suppliers with minimum rank."""
     return self.fetch_partners([
         ('supplier_rank', '>=', min_rank)
-    ], order)
+    ])

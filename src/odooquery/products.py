@@ -1,12 +1,12 @@
 from typing import List
 from .types import Product, ProductVariant, ProductStock, ProductTemplate
 
-def fetch_products(self, domain: List, order: str) -> List[Product]:
+def fetch_products(self, domain: List) -> List[Product]:
     """Base function to fetch products matching given criteria."""
     fields = ['name', 'default_code', 'barcode', 'list_price', 'standard_price',
               'qty_available', 'virtual_available', 'product_tmpl_id', 'active']
 
-    records = self.auto_paginated_search_read('product.product', domain, fields, order)
+    records = self.auto_paginated_search_read('product.product', domain, fields)
 
     return [{
         'id': product['id'],
@@ -21,11 +21,11 @@ def fetch_products(self, domain: List, order: str) -> List[Product]:
         'active': product['active']
     } for product in records]
 
-def fetch_product_variants(self, domain: List, order: str) -> List[ProductVariant]:
+def fetch_product_variants(self, domain: List) -> List[ProductVariant]:
     """Base function to fetch product variants matching given criteria."""
     fields = ['name', 'default_code', 'barcode', 'list_price', 'standard_price']
 
-    records = self.auto_paginated_search_read('product.product', domain, fields, order)
+    records = self.auto_paginated_search_read('product.product', domain, fields)
 
     return [{
         'id': variant['id'],
@@ -36,12 +36,12 @@ def fetch_product_variants(self, domain: List, order: str) -> List[ProductVarian
         'standard_price': variant['standard_price']
     } for variant in records]
 
-def fetch_product_templates(self, domain: List, order: str) -> List[ProductTemplate]:
+def fetch_product_templates(self, domain: List) -> List[ProductTemplate]:
     """Base function to fetch product templates matching given criteria."""
     fields = ['name', 'default_code', 'list_price', 'standard_price',
               'type', 'categ_id', 'product_variant_ids', 'active']
 
-    records = self.auto_paginated_search_read('product.template', domain, fields, order)
+    records = self.auto_paginated_search_read('product.template', domain, fields)
 
     return [{
         'id': template['id'],
@@ -55,21 +55,21 @@ def fetch_product_templates(self, domain: List, order: str) -> List[ProductTempl
         'active': template['active']
     } for template in records]
 
-def fetch_product_templates_by_category(self, category_ids: List[int], order: str) -> List[ProductTemplate]:
+def fetch_product_templates_by_category(self, category_ids: List[int]) -> List[ProductTemplate]:
     """Fetch product templates by category ids."""
     return self.fetch_product_templates([
         ('categ_id', 'in', category_ids)
-    ], order)
+    ])
 
-def fetch_active_products(self, order: str) -> List[Product]:
+def fetch_active_products(self) -> List[Product]:
     """Fetch all active products."""
-    return self.fetch_products([('active', '=', True)], order)
+    return self.fetch_products([('active', '=', True)])
 
-def fetch_active_product_templates(self, order: str) -> List[ProductTemplate]:
+def fetch_active_product_templates(self) -> List[ProductTemplate]:
     """Fetch all active product templates."""
-    return self.fetch_product_templates([('active', '=', True)], order)
+    return self.fetch_product_templates([('active', '=', True)])
 
-def fetch_stock_quants(self, domain: List, order: str) -> List[ProductStock]:
+def fetch_stock_quants(self, domain: List) -> List[ProductStock]:
     """Base function to fetch stock quants matching given criteria."""
     fields = ['product_id', 'location_id', 'quantity', 'reserved_quantity']
 
@@ -86,46 +86,46 @@ def fetch_stock_quants(self, domain: List, order: str) -> List[ProductStock]:
     } for quant in records]
 
 # By-field fetch functions for products
-def fetch_products_by_code(self, codes: List[str], order: str) -> List[Product]:
+def fetch_products_by_code(self, codes: List[str]) -> List[Product]:
     """Fetch products by default codes."""
-    return self.fetch_products([('default_code', 'in', codes)], order)
+    return self.fetch_products([('default_code', 'in', codes)])
 
-def fetch_products_by_barcode(self, barcodes: List[str], order: str) -> List[Product]:
+def fetch_products_by_barcode(self, barcodes: List[str]) -> List[Product]:
     """Fetch products by barcodes."""
-    return self.fetch_products([('barcode', 'in', barcodes)], order)
+    return self.fetch_products([('barcode', 'in', barcodes)])
 
-def fetch_products_by_template(self, template_ids: List[int], order: str) -> List[Product]:
+def fetch_products_by_template(self, template_ids: List[int]) -> List[Product]:
     """Fetch products by template ids."""
-    return self.fetch_products([('product_tmpl_id', 'in', template_ids)], order)
+    return self.fetch_products([('product_tmpl_id', 'in', template_ids)])
 
 # By-field fetch functions for product templates
-def fetch_product_templates_by_category(self, category_ids: List[int], order: str) -> List[ProductTemplate]:
+def fetch_product_templates_by_category(self, category_ids: List[int]) -> List[ProductTemplate]:
     """Fetch product templates by category ids."""
-    return self.fetch_product_templates([('categ_id', 'in', category_ids)], order)
+    return self.fetch_product_templates([('categ_id', 'in', category_ids)])
 
-def fetch_product_templates_by_code(self, codes: List[str], order: str) -> List[ProductTemplate]:
+def fetch_product_templates_by_code(self, codes: List[str]) -> List[ProductTemplate]:
     """Fetch product templates by default codes."""
-    return self.fetch_product_templates([('default_code', 'in', codes)], order)
+    return self.fetch_product_templates([('default_code', 'in', codes)])
 
 # By-field fetch functions for stock quants
-def fetch_stock_quants_by_product(self, product_ids: List[int], order: str) -> List[ProductStock]:
+def fetch_stock_quants_by_product(self, product_ids: List[int]) -> List[ProductStock]:
     """Fetch stock quants for specific products."""
-    return self.fetch_stock_quants([('product_id', 'in', product_ids)], order)
+    return self.fetch_stock_quants([('product_id', 'in', product_ids)])
 
-def fetch_stock_quants_by_location(self, location_ids: List[int], order: str) -> List[ProductStock]:
+def fetch_stock_quants_by_location(self, location_ids: List[int]) -> List[ProductStock]:
     """Fetch stock quants for specific locations."""
-    return self.fetch_stock_quants([('location_id', 'in', location_ids)], order)
+    return self.fetch_stock_quants([('location_id', 'in', location_ids)])
 
 # By-field fetch functions for product variants
-def fetch_product_variants_by_code(self, codes: List[str], order: str) -> List[ProductVariant]:
+def fetch_product_variants_by_code(self, codes: List[str]) -> List[ProductVariant]:
     """Fetch product variants by default codes."""
-    return self.fetch_product_variants([('default_code', 'in', codes)], order)
+    return self.fetch_product_variants([('default_code', 'in', codes)])
 
-def fetch_product_variants_by_barcode(self, barcodes: List[str], order: str) -> List[ProductVariant]:
+def fetch_product_variants_by_barcode(self, barcodes: List[str]) -> List[ProductVariant]:
     """Fetch product variants by barcodes."""
-    return self.fetch_product_variants([('barcode', 'in', barcodes)], order)
+    return self.fetch_product_variants([('barcode', 'in', barcodes)])
 
-def fetch_product_variants_by_template(self, template_ids: List[int], order: str) -> List[ProductVariant]:
+def fetch_product_variants_by_template(self, template_ids: List[int]) -> List[ProductVariant]:
     """Fetch product variants by template ids."""
-    return self.fetch_product_variants([('product_tmpl_id', 'in', template_ids)], order)
+    return self.fetch_product_variants([('product_tmpl_id', 'in', template_ids)])
 
