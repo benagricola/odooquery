@@ -17,7 +17,7 @@ def fetch_tickets(self, domain: List, order: str = None) -> List[Ticket]:
         "author_id": ticket['partner_id'][0] if isinstance(ticket['partner_id'], (list, tuple)) else ticket['partner_id'],
         "author_name": ticket['partner_name'],
         "author_email": ticket['partner_email'],
-        "description": ticket['description'],
+        "description": _strip_html(ticket['description']),
         "messages": sorted(
             [m for m in messages.fetch_messages_by_id(self, ticket['message_ids'])
              if m['body'] and m['body'].strip()],

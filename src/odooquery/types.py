@@ -84,6 +84,17 @@ class Product(TypedDict):
     category_id: int
     category_name: str
 
+class ProductTemplate(TypedDict):
+    id: int
+    name: str
+    default_code: str
+    list_price: float
+    standard_price: float
+    type: str
+    category_id: int
+    product_variant_ids: List[int]
+    active: bool
+
 class MailingStatistic(TypedDict):
     id: int
     mass_mailing_id: int

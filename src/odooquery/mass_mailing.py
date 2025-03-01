@@ -1,7 +1,6 @@
 from typing import List
 from datetime import datetime
 from .types import MailingStatistic, MailingContact, MassMailing
-from .utils.query import auto_paginated_search_read
 
 def fetch_mailings(self, domain: List, order: str = None) -> List[MassMailing]:
     """Base function to fetch mass mailings matching given criteria."""
@@ -9,7 +8,7 @@ def fetch_mailings(self, domain: List, order: str = None) -> List[MassMailing]:
               'contact_list_ids', 'total', 'sent', 'opened', 'clicked',
               'replied', 'bounced', 'failed']
 
-    records = auto_paginated_search_read(self, 'mailing.mailing', domain, fields, order)
+    records = self.auto_paginated_search_read('mailing.mailing', domain, fields, order)
 
     return [{
         'id': mailing['id'],
@@ -48,7 +47,7 @@ def fetch_mailing_statistics(self, domain: List, order: str = None) -> List[Mail
     fields = ['mass_mailing_id', 'model', 'res_id', 'email', 'trace_status',
               'sent_datetime', 'open_datetime', 'reply_datetime', 'failure_type']
 
-    records = auto_paginated_search_read(self, 'mailing.trace', domain, fields, order)
+    records = self.auto_paginated_search_read('mailing.trace', domain, fields, order)
 
     return [{
         'id': stat['id'],
@@ -82,7 +81,7 @@ def fetch_contacts(self, domain: List, order: str = None) -> List[MailingContact
     """Fetch mailing list contacts matching the given domain."""
     fields = ['name', 'company_name', 'email', 'list_ids', 'subscription_ids']
 
-    records = auto_paginated_search_read(self, 'mailing.contact', domain, fields, order)
+    records = self.auto_paginated_search_read('mailing.contact', domain, fields, order)
 
     return [{
         'id': contact['id'],
